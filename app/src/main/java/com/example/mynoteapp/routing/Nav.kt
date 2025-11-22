@@ -6,7 +6,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -17,6 +17,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mynoteapp.routing.DataClass.NavDataClass
 import com.example.mynoteapp.routing.screens.*
+import com.example.mynoteapp.routing.screens.Drawer.SignUpScreen
+import com.example.mynoteapp.routing.screens.Drawer.SigningInScreen
+import com.example.mynoteapp.routing.screens.note.EditScreen
+import com.example.mynoteapp.routing.screens.note.NotesScreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,8 +33,10 @@ fun AppDrawerWithBottomBar() {
     val drawerItems = listOf(
         NavDataClass("Home", "home", Icons.Default.Home),
         NavDataClass("Notes", "notes", Icons.Default.Notifications),
+        NavDataClass("SignIN", "sign_in", Icons.Default.Star),
+        NavDataClass("SignUp", "sign_up", Icons.Default.Star),
         NavDataClass("Profile", "profile", Icons.Default.Person),
-        NavDataClass("Setting", "setting", Icons.Default.Settings)
+
     )
 
     ModalNavigationDrawer(
@@ -70,10 +76,12 @@ fun AppDrawerWithBottomBar() {
                 startDestination = "home",
                 modifier = Modifier.padding(paddingValues)
             ) {
-                composable("home") { HomeScreen() }
-                composable("notes") { NotesScreen() }
+                composable("home") { HomeScreen(navController) }
+                composable("notes") { NotesScreen(navController) }
+                composable("edit_page") { EditScreen() }
+                composable("sign_in") { SigningInScreen() }
+                composable("sign_up") { SignUpScreen() }
                 composable("profile") { ProfileScreen() }
-                composable("setting") { SettingScreen() }
             }
         }
     }

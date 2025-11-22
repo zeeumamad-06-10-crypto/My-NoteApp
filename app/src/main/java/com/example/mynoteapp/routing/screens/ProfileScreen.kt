@@ -9,11 +9,11 @@ import androidx.compose.ui.Modifier
 
 
 @Composable
-fun SettingScreen(){
+fun ProfileScreen(){
     Box(
         modifier= Modifier.fillMaxSize(),
         contentAlignment= Alignment.Center
     ){
-        Text(text = "Setting")
+        Text(text = "Image Here\n drawer open")
     }
 }

@@ -1,6 +1,7 @@
 package com.example.mynoteapp.routing
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
@@ -17,8 +18,9 @@ fun BottomNavBar(navController: NavHostController) {
     val items = listOf(
         NavDataClass("Home", "home", Icons.Default.Home),
         NavDataClass("Notes", "notes", Icons.Default.Notifications),
+        NavDataClass("EditPage", "edit_page", Icons.Default.Add),
         NavDataClass("Profile", "profile", Icons.Default.Person),
-        NavDataClass("Setting", "setting", Icons.Default.Settings)
+
     )
 
     NavigationBar {

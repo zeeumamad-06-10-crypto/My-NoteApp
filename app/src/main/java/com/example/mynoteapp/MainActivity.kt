@@ -18,11 +18,7 @@ class MainActivity : ComponentActivity() {
 
             AppDrawerWithBottomBar()
 
-
-
-
-
-
         }
     }
 }
+

@@ -1,4 +1,6 @@
-package com.example.mynoteapp.routing.screens
+package com.example.mynoteapp.routing.screens.Drawer
+
+
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -7,11 +9,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun NotesScreen() {
+fun SignUpScreen() {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "Notes Screen")
+        Text(text = "Profile Screen")
     }
 }
+
+
+
