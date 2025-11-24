@@ -11,7 +11,16 @@ import androidx.navigation.NavController
 fun HomeScreen(navController: NavController) {
 
     Scaffold(
-
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate("notes")
+                }
+            ) {
+                Text("+")
+            }
+        },
+        floatingActionButtonPosition = FabPosition.End
     ) { paddingValues ->
 
         Box(
