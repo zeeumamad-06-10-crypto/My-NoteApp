@@ -30,47 +30,59 @@ fun AppDrawerWithBottomBar() {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val drawerItems = listOf(
-        NavDataClass("Home", "home", Icons.Default.Home),
-        NavDataClass("Notes", "notes", Icons.Default.Notifications),
-        NavDataClass("SignIN", "sign_in", Icons.Default.Star),
-        NavDataClass("SignUp", "sign_up", Icons.Default.Star),
-        NavDataClass("Profile", "profile", Icons.Default.Person),
-
-    )
-
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                Text("Menu", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(16.dp))
-                drawerItems.forEach { item ->
-                    NavigationDrawerItem(
-                        label = { Text(item.title) },
-                        selected = false,
-                        icon = { Icon(item.icon, contentDescription = item.title) },
-                        onClick = {
-                            navController.navigate(item.route)
-                            scope.launch { drawerState.close() }
-                        }
-                    )
-                }
+                DrawerHeader()  // ← User can pick image here
+
+                NavigationDrawerItem(
+                    label = { Text("Home") },
+                    selected = false,
+                    onClick = {
+                        navController.navigate("home")
+                        scope.launch { drawerState.close() }
+                    }
+                )
+
+                NavigationDrawerItem(
+                    label = { Text("Log Out") },
+                    selected = false,
+                    onClick = {
+                        navController.navigate("notes")
+                        scope.launch { drawerState.close() }
+                    }
+                )
             }
         }
-    ) {
+    )
+    {
+
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = { Text("My Note App") },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        IconButton(onClick = {
+                            scope.launch { drawerState.open() }
+                        }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu")
                         }
                     }
                 )
             },
-            bottomBar = { BottomNavBar(navController) } // Use the reusable bottom nav
+
+            // ⭐ FIXED HERE — we pass onProfileClick
+            bottomBar = {
+                BottomNavBar(
+                    navController = navController,
+                    onProfileClick = {
+                        scope.launch { drawerState.open() }  // OPEN DRAWER FROM PROFILE BUTTON
+                    }
+                )
+            }
         ) { paddingValues ->
+
             NavHost(
                 navController = navController,
                 startDestination = "home",
@@ -78,10 +90,6 @@ fun AppDrawerWithBottomBar() {
             ) {
                 composable("home") { HomeScreen(navController) }
                 composable("notes") { NotesScreen(navController) }
-                composable("edit_page") { EditScreen() }
-                composable("sign_in") { SigningInScreen() }
-                composable("sign_up") { SignUpScreen() }
-                composable("profile") { ProfileScreen() }
             }
         }
     }
