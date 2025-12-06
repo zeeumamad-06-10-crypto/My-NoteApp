@@ -17,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mynoteapp.routing.DataClass.NavDataClass
 import com.example.mynoteapp.routing.screens.*
+import com.example.mynoteapp.routing.screens.Drawer.PdfScreen
 import com.example.mynoteapp.routing.screens.Drawer.SignUpScreen
 import com.example.mynoteapp.routing.screens.Drawer.SigningInScreen
 import com.example.mynoteapp.routing.screens.note.EditScreen
@@ -46,6 +47,15 @@ fun AppDrawerWithBottomBar() {
                 )
 
                 NavigationDrawerItem(
+                    label = { Text("PDF") },
+                    selected = false,
+                    onClick = {
+                        navController.navigate("pdf")
+                        scope.launch { drawerState.close() }
+                    }
+                )
+
+                NavigationDrawerItem(
                     label = { Text("Log Out") },
                     selected = false,
                     onClick = {
@@ -53,6 +63,7 @@ fun AppDrawerWithBottomBar() {
                         scope.launch { drawerState.close() }
                     }
                 )
+
             }
         }
     )
@@ -89,6 +100,7 @@ fun AppDrawerWithBottomBar() {
                 modifier = Modifier.padding(paddingValues)
             ) {
                 composable("home") { HomeScreen(navController) }
+                composable("pdf") { PdfScreen(navController) }
                 composable("notes") { NotesScreen(navController) }
             }
         }
