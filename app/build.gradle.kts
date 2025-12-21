@@ -9,7 +9,7 @@ android {
     compileSdk {
         version = release(36)
     }
-
+//
     defaultConfig {
         applicationId = "com.example.mynoteapp"
         minSdk = 26

@@ -1,20 +1,13 @@
 package com.example.mynoteapp.routing.screens.Drawer
 
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -23,20 +16,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PdfScreen(navController: NavController) {
     val context = LocalContext.current
 
-    var pdfUri by remember { mutableStateOf<Uri?>(null) }
     var renderer by remember { mutableStateOf<PdfRenderer?>(null) }
     var fileDescriptor by remember { mutableStateOf<ParcelFileDescriptor?>(null) }
     var pageCount by remember { mutableStateOf(0) }
@@ -48,35 +40,38 @@ fun PdfScreen(navController: NavController) {
     var offsetX by rememberSaveable { mutableStateOf(0f) }
     var offsetY by rememberSaveable { mutableStateOf(0f) }
 
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
-        pdfUri = it
-    }
+    val configuration = LocalConfiguration.current
+    val screenWidthPx = configuration.screenWidthDp * context.resources.displayMetrics.density
 
-    // Load PDF
-    LaunchedEffect(pdfUri) {
-        val uri = pdfUri ?: return@LaunchedEffect
-        try { context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: Exception) {}
-
-        renderer?.close()
-        fileDescriptor?.close()
-        pageBitmap = null
-        currentPageIndex = 0
-
-        val pfd = context.contentResolver.openFileDescriptor(uri, "r") ?: return@LaunchedEffect
-        fileDescriptor = pfd
-
+    // Load PDF from assets
+    LaunchedEffect(Unit) {
         try {
-            val pdfRenderer = PdfRenderer(pfd)
-            renderer = pdfRenderer
-            pageCount = pdfRenderer.pageCount
+            val assetFile = "Linkoln.pdf" // your file in assets
+            val tempFile = File(context.cacheDir, assetFile)
+            context.assets.open(assetFile).use { input ->
+                tempFile.outputStream().use { output -> input.copyTo(output) }
+            }
+
+            val pfd = ParcelFileDescriptor.open(tempFile, ParcelFileDescriptor.MODE_READ_ONLY)
+            fileDescriptor = pfd
+            renderer = PdfRenderer(pfd)
+            pageCount = renderer?.pageCount ?: 0
         } catch (e: Exception) {
-            Log.e("PdfViewer", "Renderer error", e)
+            Log.e("PdfViewer", "Failed to load PDF", e)
         }
     }
 
-    // Render page
+    // Render page and auto-scale to full width
     LaunchedEffect(currentPageIndex, renderer) {
-        renderer?.let { pageBitmap = renderPageToBitmap(it, currentPageIndex) }
+        renderer?.let {
+            pageBitmap = renderPageToBitmap(it, currentPageIndex)
+            pageBitmap?.let { bitmap ->
+                // Set scale to fill screen width
+                scale = (screenWidthPx / bitmap.width).coerceIn(1f, 8f)
+                offsetX = 0f
+                offsetY = 0f
+            }
+        }
     }
 
     var cumulativeDragX by remember { mutableStateOf(0f) }
@@ -84,7 +79,7 @@ fun PdfScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            // Pinch zoom
+            // Pinch zoom & pan
             .pointerInput(Unit) {
                 detectTransformGestures { _, pan, zoom, _ ->
                     scale = (scale * zoom).coerceIn(1f, 8f)
@@ -92,7 +87,7 @@ fun PdfScreen(navController: NavController) {
                     offsetY += pan.y
                 }
             }
-            // Horizontal swipe → change page
+            // Horizontal swipe to change page
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { cumulativeDragX = 0f },
@@ -100,25 +95,14 @@ fun PdfScreen(navController: NavController) {
                         change.consume()
                         cumulativeDragX += dragAmount.x
                         if (scale > 1f) {
-                            // If zoomed, also pan
                             offsetX += dragAmount.x
                             offsetY += dragAmount.y
                         }
                     },
                     onDragEnd = {
-                        // Change page if swipe threshold crossed
                         if (cumulativeDragX > 150f && currentPageIndex > 0) currentPageIndex--
                         else if (cumulativeDragX < -150f && currentPageIndex < pageCount - 1) currentPageIndex++
                         cumulativeDragX = 0f
-                    }
-                )
-            }
-            // Double-tap → page change
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onDoubleTap = { offset ->
-                        if (offset.x < size.width / 2 && currentPageIndex > 0) currentPageIndex--
-                        else if (offset.x >= size.width / 2 && currentPageIndex < pageCount - 1) currentPageIndex++
                     }
                 )
             },
@@ -135,25 +119,11 @@ fun PdfScreen(navController: NavController) {
                     translationY = offsetY
                 )
             )
-        } ?: Text("Open a PDF", textAlign = TextAlign.Center)
-
-        Button(
-            onClick = { launcher.launch(arrayOf("application/pdf")) },
-            modifier = Modifier.align(Alignment.TopCenter).padding(16.dp)
-        ) { Text("Open PDF") }
-
-//        Row(
-//            modifier = Modifier.align(Alignment.BottomCenter).padding(20.dp),
-//            horizontalArrangement = Arrangement.SpaceEvenly
-//        ) {
-//            Button(onClick = { if (currentPageIndex > 0) currentPageIndex-- }) { Text("Prev") }
-//            Button(onClick = { if (currentPageIndex < pageCount - 1) currentPageIndex++ }) { Text("Next") }
-//            Button(onClick = {
-//                scale = 1f
-//                offsetX = 0f
-//                offsetY = 0f
-//            }) { Text("Reset") }
-//        }
+        } ?: Text(
+            "Loading PDF...",
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(16.dp)
+        )
     }
 
     DisposableEffect(Unit) {
@@ -164,7 +134,7 @@ fun PdfScreen(navController: NavController) {
     }
 }
 
-// Must be outside PdfScreen
+// Function to render PDF page to bitmap
 suspend fun renderPageToBitmap(renderer: PdfRenderer, pageIndex: Int): androidx.compose.ui.graphics.ImageBitmap? =
     withContext(Dispatchers.IO) {
         var page: PdfRenderer.Page? = null
@@ -180,4 +150,3 @@ suspend fun renderPageToBitmap(renderer: PdfRenderer, pageIndex: Int): androidx.
             page?.close()
         }
     }
-
