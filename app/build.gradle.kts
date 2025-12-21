@@ -66,7 +66,12 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.navigation:navigation-compose:2.7.0")
+<<<<<<< HEAD
     implementation("org.apache.poi:poi-ooxml:5.2.3")
+=======
+//SplashScreen
+    implementation("androidx.core:core-splashscreen:1.0.1")
+>>>>>>> 81d56e18e727e0c58e94bf3a3ad27165cb865567
 
 
 }

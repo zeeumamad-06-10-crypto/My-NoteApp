@@ -23,7 +23,7 @@
         </provider>
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.donateblood.mynoteapp.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.MyNoteApp">

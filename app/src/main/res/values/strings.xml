@@ -1,3 +1,7 @@
 <resources>
+<<<<<<< HEAD
     <string name="app_name">Bishwo Shahitto Kendro</string>
+=======
+    <string name="app_name">DonateBlood</string>
+>>>>>>> 81d56e18e727e0c58e94bf3a3ad27165cb865567
 </resources>
